@@ -31,13 +31,12 @@ El script permite elegir interactivamente el motor de base de datos antes de rea
 - **Opción MySQL 8.4 LTS (Debian):** Utiliza las imágenes base basadas en Debian (`serversideup/php:8.4-fpm-nginx` y `serversideup/php:8.4-cli`). En este caso, Debian es imprescindible para poder añadir e instalar oficialmente el paquete `mysql-community-client` desde los repositorios APT de Oracle MySQL. Esto evita incompatibilidades y fallos al usar utilidades de volcado (`mysqldump`) de MariaDB con servidores MySQL 8.4.
 
 ---
-
 ### ⚡ Optimización con Doble Instancia de Redis
 
-Para garantizar el máximo rendimiento y la seguridad de los usuarios, el entorno no mezcla todos los datos en un solo servidor Redis. En su lugar, el script orquesta dos instancias separadas con configuraciones específicas para su propósito:
+Para asegurar el mejor rendimiento y evitar problemas con los usuarios conectados, el sistema utiliza dos contenedores de Redis separados, cada uno optimizado para una tarea concreta:
 
-- **Redis Cache (`redis_cache`):** Destinado exclusivamente a la caché de consultas y plantillas de Craft CMS. Se configura de forma puramente volátil (sin guardado en disco mediante `--save ""`)[cite: 1]. Utiliza una política de memoria `allkeys-lru`[cite: 1], lo que significa que si alcanza su límite de memoria, eliminará automáticamente la caché más antigua para dejar espacio libre sin interrumpir el servicio.
-- **Redis Session (`redis_session`):** Dedicado a gestionar las sesiones activas de los usuarios. Dado que la pérdida de estos datos desconectaría a los administradores y usuarios de la web, cuenta con almacenamiento persistente montado en un volumen de Docker (`redis_session_data`)[cite: 1]. Aplica una política `noeviction` (prohíbe el borrado automático de datos) y activa el modo *Append Only File* (`--appendonly yes`), escribiendo los cambios en el disco cada segundo[cite: 1].
+- **Redis Cache (`redis_cache`):** Se encarga de guardar temporalmente datos de la web para que cargue mucho más rápido. Funciona exclusivamente en la memoria RAM (no guarda nada en el disco) y, si se llena, borra automáticamente la caché más antigua para seguir funcionando sin interrupciones.
+- **Redis Session (`redis_session`):** Gestiona las sesiones activas de los usuarios. A diferencia de la caché, esta instancia sí guarda los datos de forma permanente en un volumen del disco. Esto garantiza que si el contenedor se reinicia o actualiza, ningún administrador o cliente pierda su sesión y sea desconectado.
 
 ## 🔄 Filosofía de Trabajo: Arquitectura No Inmutable
 
