@@ -80,14 +80,14 @@ Para garantizar que los datos persistan a reinicios, reconstrucciones o actualiz
 
 2. **Otorgar permisos de ejecución** al script:
  
-```bash
-chmod +x deploy-craft.sh
-```
+   ```bash
+   chmod +x deploy-craft.sh
+   ```
 3. **Ejecutar el script** en una terminal interactiva:
  
-```bash
-./deploy-craft.sh
-```
+   ```bash
+   ./deploy-craft.sh
+   ```
 4. **Sigue las instrucciones en pantalla:**
  
 - Selecciona el motor de base de datos (`1` para MySQL 8.4 o `2` para PostgreSQL 18).
