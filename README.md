@@ -10,7 +10,7 @@ Este repositorio contiene scripts de automatización para desplegar **Craft CMS 
 
 ---
 
-# Despliegue Automatizado de Craft CMS 5 en Docker
+# 1. Despliegue Automatizado de Craft CMS 5 en Docker
 
 Este script es un instalador y orquestador automatizado para desplegar **Craft CMS 5** sobre contenedores Docker en entornos de producción o staging.
 
