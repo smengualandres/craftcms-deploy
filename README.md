@@ -56,7 +56,7 @@ Para garantizar que los datos persistan a reinicios, reconstrucciones o actualiz
 
 | Servicio | Tipo de Almacenamiento | Ubicación en el Host / Volumen Docker | Ruta interna en el Contenedor |
 | :--- | :--- | :--- | :--- |
-| **PostgreSQL** | Volumen nombrado | `db_data` | `/var/lib/postgresql/data` |
+| **PostgreSQL** | Volumen nombrado | `db_data` | `/var/lib/postgresql` |
 | **MySQL** | Volumen nombrado | `db_data` | `/var/lib/mysql` |
 | **Caddy (Certificados SSL)** | Carpeta local | `./caddy_data` | `/data` |
 | **Caddy (Configuración)** | Carpeta local | `./caddy_config` | `/config` |
