@@ -32,6 +32,13 @@ El script permite elegir interactivamente el motor de base de datos antes de rea
 
 ---
 
+### ⚡ Optimización con Doble Instancia de Redis
+
+Para garantizar el máximo rendimiento y la seguridad de los usuarios, el entorno no mezcla todos los datos en un solo servidor Redis. En su lugar, el script orquesta dos instancias separadas con configuraciones específicas para su propósito:
+
+- **Redis Cache (`redis_cache`):** Destinado exclusivamente a la caché de consultas y plantillas de Craft CMS. Se configura de forma puramente volátil (sin guardado en disco mediante `--save ""`)[cite: 1]. Utiliza una política de memoria `allkeys-lru`[cite: 1], lo que significa que si alcanza su límite de memoria, eliminará automáticamente la caché más antigua para dejar espacio libre sin interrumpir el servicio.
+- **Redis Session (`redis_session`):** Dedicado a gestionar las sesiones activas de los usuarios. Dado que la pérdida de estos datos desconectaría a los administradores y usuarios de la web, cuenta con almacenamiento persistente montado en un volumen de Docker (`redis_session_data`)[cite: 1]. Aplica una política `noeviction` (prohíbe el borrado automático de datos) y activa el modo *Append Only File* (`--appendonly yes`), escribiendo los cambios en el disco cada segundo[cite: 1].
+
 ## 🔄 Filosofía de Trabajo: Arquitectura No Inmutable
 
 A diferencia de los despliegues de contenedores puramente inmutables (donde el código fuente se compila dentro de la imagen e impediría modificaciones en caliente), este proyecto utiliza un modelo **híbrido no inmutable** adaptado a flujos de trabajo de desarrollo web activo:
@@ -54,6 +61,7 @@ Para garantizar que los datos persistan a reinicios, reconstrucciones o actualiz
 | **Caddy (Certificados SSL)** | Carpeta local | `./caddy_data` | `/data` |
 | **Caddy (Configuración)** | Carpeta local | `./caddy_config` | `/config` |
 | **Redis (Sesiones)** | Volumen nombrado | `redis_session_data` | `/data` |
+| **Redis (Caché)** | Volátil (En memoria) | *Ninguna* | *N/A* |
 | **Backups de Craft** | Carpeta local | `./storage/backups` | `/var/www/html/storage/backups` |
 | **Archivos Web / Assets** | Carpeta local | `./web` | `/var/www/html/web` |
 
