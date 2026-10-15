@@ -72,7 +72,7 @@ Para garantizar que los datos persistan a reinicios, reconstrucciones o actualiz
 > [!WARNING]
 > **Requisito indispensable de DNS:** Antes de ejecutar el script, **el dominio principal debe estar previamente configurado apuntando a la dirección IP pública del servidor**. Caddy necesita que el tráfico HTTP/HTTPS llegue al servidor para validar y emitir automáticamente los certificados SSL de Let's Encrypt durante el despliegue.
 
-- **Sistema Operativo Recomendado:** Instalación limpia de **Ubuntu Server 26 LTS**.
+- **Sistema Operativo Recomendado:** Instalación limpia de **Ubuntu Server 26 LTS** o **Debian 13 Trixie**
 - **Entorno de Pruebas:** Probado y verificado en instancias VPS de **OVHcloud**.
 - **Usuario:** Debe ejecutarse con un usuario con privilegios `sudo` (no como usuario `root` directo).
 - **Docker:** No es necesario tener Docker instalado previamente. Si el script detecta que no existe en el sistema, **instalará Docker y Docker Compose automáticamente** a través del script oficial de Docker.
