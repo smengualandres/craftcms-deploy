@@ -30,7 +30,7 @@ echo -e "${GREEN}📦 Actualizando sistema e instalando dependencias base...${NC
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade -y
-apt-get install -y software-properties-common curl wget unzip apt-transport-https debian-keyring debian-archive-keyring redis-server ufw
+apt-get install -y software-properties-common curl wget unzip apt-transport-https debian-keyring debian-archive-keyring redis-server ufw openssh-server
 
 # Configurar Firewall
 ufw allow 80/tcp
