@@ -111,11 +111,94 @@ El script no solo levanta los contenedores, sino que aplica una capa de segurida
 - Despliega un servicio en systemd (`craft-docker-firewall.service`) que aplica reglas en la cadena `DOCKER-USER` de iptables. Esto evita que el motor interno de Docker ignore las reglas del firewall del host y exponga la base de datos o Redis públicamente.
 
 ---
+---
+
+# 2. Despliegue Automatizado de Craft CMS 5 en Servidor Tradicional (Bare-Metal)
+
+Este script proporciona una instalación nativa, automatizada y optimizada de **Craft CMS 5** directamente sobre el sistema operativo base del servidor (Bare-Metal) sin utilizar contenedores. Está diseñado para entornos donde se prefiere el máximo rendimiento directo del hardware y una gestión de servicios a nivel de sistema.
+
+> [!NOTE]
+> **Aviso de proyecto:** Este script forma parte de un **proyecto de innovación educativa (Proyecto IDHE - 4419824)** de la Universitat de València. Se encuentra en una fase inicial de desarrollo y evaluación, por lo que **no está exento de errores**. Ha sido desarrollado con asistencia de **Inteligencia Artificial**.
+
+> [!TIP]
+> **Enfoque:** La configuración de los servicios (PHP-FPM, MySQL, Redis y Caddy) ha sido optimizada aplicando configuraciones de producción, límites de memoria ampliados y bloqueos de seguridad recomendados para aplicaciones web modernas y las exigencias de **Craft CMS 5**.
+
+---
+
+## 🏗 Pila Tecnológica y Arquitectura Nativa
+
+El despliegue instala y orquesta los siguientes componentes directamente a través del gestor de paquetes del sistema (APT):
+
+- **Servidor Web y SSL Automático (Caddy):** Sustituye a Nginx/Apache. Se encarga de servir la web a través de PHP-FPM y de la gestión totalmente automática de certificados SSL con Let's Encrypt. Incluye reglas de seguridad nativas en su `Caddyfile` para bloquear accesos a rutas críticas (`/.env`, `/config/`, `/storage/`, `/vendor/`).
+- **Base de Datos (MySQL 8):** Instalación directa en el sistema. El script optimiza el rendimiento asignando 2GB a `innodb_buffer_pool_size` en su archivo de configuración, limpia usuarios por defecto y bases de datos de prueba, y carga las zonas horarias del sistema (`timezones`), un requisito esencial para Craft CMS.
+- **Procesamiento PHP (PHP-FPM 8.x):** Se instala la versión nativa de PHP con todas las extensiones requeridas (`mbstring`, `imagick`, `redis`, `bcmath`, etc.). Se aplica un *hardening* básico ocultando errores en pantalla (`display_errors = Off`) y se aumenta la memoria a `512M`.
+- **Caché y Sesiones (Redis):** Se despliega una instancia local de Redis para agilizar el rendimiento de Craft. Por seguridad, se fuerza a escuchar exclusivamente en `127.0.0.1` y se activa el `protected-mode`.
+
+---
+
+## ⚡ Procesamiento en Segundo Plano (Colas)
+
+A diferencia del entorno de Docker, que utiliza un contenedor aislado para ejecutar tareas, este despliegue garantiza la ejecución de trabajos en segundo plano creando un servicio nativo en Systemd:
+
+- Se genera el demonio `craft-queue.service`, ejecutado por el usuario web del sistema (`www-data`).
+- Mantiene el comando `php craft queue/listen` corriendo de manera persistente en segundo plano.
+- Cuenta con políticas de reinicio automático para asegurar que las sincronizaciones, envíos de correo y actualizaciones de caché nunca se detengan.
+
+---
+
+## 🔄 Filosofía de Trabajo: Acceso Directo y SFTP Enjaulado
+
+Al no existir volúmenes ni contenedores efímeros, todos los archivos residen físicamente en `/var/www/html/tu-dominio.com`. Para mantener un flujo de trabajo seguro:
+
+- **Usuario SFTP Dedicado:** El script crea el usuario `sftp_user` de forma automática.
+- **Chroot (Enjaulamiento):** Se modifica la configuración de SSH (`/etc/ssh/sshd_config`) para restringir al usuario. Al conectarse, este entra directamente a la carpeta web y no puede navegar hacia directorios superiores del servidor Linux ni ejecutar comandos de terminal.
+
+---
+
+## 🛠 Requisitos Previos e Instalación
+
+> [!WARNING]
+> **Requisito indispensable de DNS:** Antes de ejecutar el script, **el registro DNS (Tipo A) de tu dominio debe estar apuntando a la dirección IP del servidor**. El instalador lo necesita para que Caddy valide el dominio y emita el certificado SSL al instante.
+
+- **Sistema Operativo:** Instalación limpia de **Debian** o **Ubuntu Server**.
+- **Permisos:** El script debe ejecutarse directamente como el superusuario **`root`** (no sirve solo con `sudo`), ya que manipula servicios a nivel del sistema operativo.
+- **Directorio de trabajo:** El servidor debe estar completamente virgen, sin otras instalaciones previas de MySQL o Nginx/Apache que puedan generar conflictos de puertos.
+
+---
+
+## 🚀 Modo de Uso
+
+1. **Inicia sesión como root o usuario** en tu servidor.
+2. **Descarga y otorga permisos de ejecución** al script:
+
+   ```bash
+   chmod +x deploy-baremetal.sh
+
+3. **Ejecuta el script:**
+
+   ```bash
+   sudo ./deploy-baremetal.sh
+   ```
+
+4. **Sigue las instrucciones interactivas:**
+
+   - Introduce tu dominio principal (ej. `craft.midominio.com`).
+   - Introduce un correo electrónico válido para Let's Encrypt y la creación del primer administrador de Craft.
+
+Al finalizar, el script volcará todas las contraseñas generadas (Administrador de Craft, Base de Datos, SFTP) en un archivo seguro ubicado en `/root/credenciales_craft.txt`.
+
+## 🛡 Seguridad e Integración con Firewall
+
+A nivel de red y sistema, se implementan las siguientes políticas:
+
+- **UFW (Uncomplicated Firewall):** El script fuerza el reinicio del firewall y lo configura para permitir **exclusivamente** tráfico web (puertos 80 y 443) y el puerto de administración remota y SFTP (puerto 22). Todo el resto del tráfico externo queda bloqueado por defecto.
+
+- **Aislamiento de servicios:** Tanto MySQL como Redis están forzados a no aceptar conexiones externas (`bind-address = 127.0.0.1`), siendo accesibles solo por el propio servidor.   
 
 ## 🔒 Aviso de Seguridad Adicional
 
 > [!CAUTION]
-> Este script implementa medidas automatizadas básicas de endurecimiento (*hardening*), pero **no sustituye una auditoría de seguridad completa**. 
+> Estos scripts implementan medidas automatizadas básicas de endurecimiento (*hardening*), pero **no sustituye una auditoría de seguridad completa**. 
 > 
 > Es responsabilidad del administrador revisar y asegurar los siguientes aspectos antes de llevar el entorno a producción:
 > - **Puertos y cortafuegos de infraestructura:** Verifica el firewall externo de tu proveedor de Cloud/VPS (como las reglas de seguridad de OVH, AWS, DigitalOcean, etc.) para asegurarte de que no haya puertos innecesarios expuestos a Internet.
