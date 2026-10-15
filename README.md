@@ -161,7 +161,7 @@ Al no existir volúmenes ni contenedores efímeros, todos los archivos residen f
 > [!WARNING]
 > **Requisito indispensable de DNS:** Antes de ejecutar el script, **el registro DNS (Tipo A) de tu dominio debe estar apuntando a la dirección IP del servidor**. El instalador lo necesita para que Caddy valide el dominio y emita el certificado SSL al instante.
 
-- **Sistema Operativo:** Instalación limpia **Ubuntu Server 26 LTS** con **servidor SSH** instalado.
+- **Sistema Operativo:** Instalación limpia **Ubuntu Server 26 LTS** con **servidor SSH** instalado (el script lo instala si no lo encuentra).
 - **Permisos:** El script debe ejecutarse directamente como el superusuario **`root`** (no sirve solo con `sudo`, aunque en las pruebas ha funcionado), ya que manipula servicios a nivel del sistema operativo.
 - **Directorio de trabajo:** El servidor debe estar con una instalación limpia, sin otras instalaciones previas de MySQL o Nginx/Apache que puedan generar conflictos de puertos.
 
